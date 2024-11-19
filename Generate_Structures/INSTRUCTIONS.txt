@@ -1,0 +1,1 @@
+This folder contains a couple of functions for quickly creating simplified structures, such as polymer chains and solvation spheres, to be optimized using Gaussian or Orca.
