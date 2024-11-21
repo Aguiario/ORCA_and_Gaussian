@@ -139,7 +139,18 @@ def df_analysis_from_excel(df, position=0, plot=False, color='blue', linestyle='
         
         # Enable grid lines with a specific style and color
         plt.grid(True, linestyle=':', color='gray', linewidth=0.8)
-        
+
+        # Comments
+        #plt.axvspan(900, 1100, color='skyblue', alpha=0.5)
+        #plt.text((900 + 1100) / 2, 1, 'Mn-O', color='blue', ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.7))
+
+        #plt.axvspan(450, 750, color='orange', alpha=0.5)
+        #plt.text((450 + 750) / 2, 1, 'Mn-O-Mn', color='orange', ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.7))
+
+        #plt.axvspan(1020, 1120, color='green', alpha=0.5)
+        #plt.text((1020 + 1120) / 2, 0.8, 'ClO4', color='green', ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.7))
+
+
         # Display the plot
         plt.show()
     
