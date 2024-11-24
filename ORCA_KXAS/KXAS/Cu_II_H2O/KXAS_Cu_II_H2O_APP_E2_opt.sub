@@ -1,0 +1,8 @@
+#!/bin/bash
+# FILENAME: KXAS_Cu_II_H2O_APP_E2_opt.inp
+
+hostname
+
+module use /depot/physics/etc/modulefiles
+module load orca
+/depot/physics/apps/orca_5.0.4_linux_x86_openmpi411/orca KXAS_Cu_II_H2O_APP_E2_opt.inp > KXAS_Cu_II_H2O_APP_E2_opt.out
