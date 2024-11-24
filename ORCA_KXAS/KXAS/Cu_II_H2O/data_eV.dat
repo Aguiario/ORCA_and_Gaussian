@@ -1,7 +1,0 @@
-Cannot read the paras.inp file ... 
-    taking the line width parameter from the command line 
-Number of peaks            ...   60
-Start wavenumber [cm-1]     ...   5000.0
-Stop wavenumber [cm-1]      ...  40000.0
-Peak FWHM [cm-1]             ...  1500.00
-Number of points           ...   1024
