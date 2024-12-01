@@ -36,3 +36,16 @@ def plot(file, plot = False, plot_bar = False, name = None, x_name = None,x_lim 
         plt.legend()
         plt.show()
     return name, x, y
+
+def int_dif(file_a, file_b, target_energy):
+    """
+    Calculate the absolute difference between intensities in two data arrays at the closest energy value to target_energy.
+    """
+    # Find the index of the closest energy value to target_energy in both arrays
+    a = np.abs(file_a[:, 0] - target_energy).argmin()
+    b = np.abs(file_b[:, 0] - target_energy).argmin()
+    
+    # Calculate the absolute difference between the intensities
+    dif = np.abs(file_a[a, 1] - file_b[b, 1])
+    
+    return dif
