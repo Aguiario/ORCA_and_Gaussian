@@ -2,51 +2,57 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-def plot(file, plot = False, plot_bar = False, name = None, x_name = None,x_lim = None, y_name = None, width = 10, normalized = False):
-    """
-    This function, `plot`, is designed to plot data from a given file using either a line plot or a bar 
-    plot, or both, based on the provided arguments.
-    
-    Returns:
-    - name: The label name for the plot.
-    - x: The x-axis data.
-    - y: The  y-axis data.
-    """
+def plot(file_path, plot = True, plot_curve=True, plot_bar = True, sigma = 0.1, name = "Absorption Spectrum"):
 
-    x, y = file[:, 0], file[:, 1]
+    # Leer el encabezado del primer archivo
+    with open(file_path, 'r') as f:
+        headers = f.readline().strip().split('\t')  # Leer y dividir los encabezados
 
-    if normalized:
-        y = (y - np.min(y)) / (np.max(y) - np.min(y))
+    energy_header = headers[0]  # Nombre de la primera columna
+    intensity_header = headers[1]  # Nombre de la segunda columna
+
+    # Datos iniciales
+    data = np.loadtxt(file_path, skiprows=1)
+
+    # Extraer energía e intensidad
+    energy = data[:, 0]
+    intensity = data[:, 1]
+
+    # Filtrar intensidades no nulas
+    nonzero_indices = intensity != 0
+    energy_nonzero = energy[nonzero_indices]
+    intensity_nonzero = intensity[nonzero_indices]
+
+    # Función para generar perfiles de líneas gaussianas
+    def gaussian_lineshape(x, x0, I, sigma):
+        return I * np.exp(-((x - x0)**2) / (2 * sigma**2))
+
+    # Crear un rango de energía para graficar el perfil de línea
+    energy_range = np.linspace(energy_nonzero.min() - 0.5, energy_nonzero.max() + 0.5, 1000)
+
+    # Crear el perfil de líneas sumando gaussianas para cada energía con intensidad no nula
+    gaussian_profile = np.zeros_like(energy_range)
+    for x0, I in zip(energy_nonzero, intensity_nonzero):
+        gaussian_profile += gaussian_lineshape(energy_range, x0, I, sigma)
 
     if plot:
+        # Graficar ambos conjuntos de datos
         plt.figure(figsize=(10, 6))
-        plt.plot(x, y,linewidth=width ,label=name, alpha=0.6)
-        plt.xlabel(x_name)
-        plt.xlim(x_lim[0], x_lim[1])
-        plt.ylabel(y_name)
-        plt.legend()
-        plt.show()
+        if plot_curve:
+            # Gráfica de líneas para el primer conjunto de datos
+            plt.plot(energy_range, gaussian_profile, label="Gaussian Lineshape", color='blue', linewidth=2)
+        if plot_bar:
+            # Gráfica de barras para los datos "sticks"
+            plt.bar(energy_nonzero, intensity_nonzero, width=0.01, color='orange', label="Datos originales (sticks)")
 
-    if plot_bar:
-        plt.figure(figsize=(10, 6))
-        plt.bar(x, y, width=width, label=name, alpha=0.6)
-        plt.xlabel(x_name)
-        if x_lim:
-            plt.xlim(x_lim[0], x_lim[1])
-        plt.ylabel(y_name)
-        plt.legend()
-        plt.show()
-    return name, x, y
+        # Configuración del gráfico
+        plt.xlabel(energy_header)
+        plt.ylabel(intensity_header)
+        plt.title(name)
+        plt.grid(True)
 
-def int_dif(file_a, file_b, target_energy):
-    """
-    Calculate the absolute difference between intensities in two data arrays at the closest energy value to target_energy.
-    """
-    # Find the index of the closest energy value to target_energy in both arrays
-    a = np.abs(file_a[:, 0] - target_energy).argmin()
-    b = np.abs(file_b[:, 0] - target_energy).argmin()
-    
-    # Calculate the absolute difference between the intensities
-    dif = np.abs(file_a[a, 1] - file_b[b, 1])
-    
-    return dif
+        # Mostrar el gráfico
+        plt.show()
+    curve = [energy_range, gaussian_profile]
+    bar = [energy_nonzero, intensity_nonzero]
+    return curve, bar
