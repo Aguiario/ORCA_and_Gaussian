@@ -1,0 +1,12 @@
+Atom: 97
+Frequency   X       Y       Z       IR      Raman
+
+Atom: 99
+Frequency   X       Y       Z       IR      Raman
+
+Atom: 101
+Frequency   X       Y       Z       IR      Raman
+
+Atom: 103
+Frequency   X       Y       Z       IR      Raman
+
