@@ -128,6 +128,8 @@ def summarize_txt_files(directory):
     print(f"summary.txt file successfully created in {directory}")
 
 
+import os
+
 def process_frequencies(file_path, output_folder="Frequencies"):
     """
     Processes frequency data from a log file and generates an output file containing atomic frequencies,
@@ -141,14 +143,13 @@ def process_frequencies(file_path, output_folder="Frequencies"):
         list: List of atom IDs extracted from the input file.
     """
     input_file = "summary.txt"
-
     atom_positions = []
 
     # Read the input file to find the target file and atom IDs
     with open(input_file, 'r') as file:
         lines = file.readlines()
 
-    # Derive the target file name from the input file path
+    # Derive the target file name
     target_file = file_path.replace('data\\', '').replace('.log', '.txt')
     found_file = False
 
@@ -163,14 +164,14 @@ def process_frequencies(file_path, output_folder="Frequencies"):
         print(f"File {target_file} not found in the input document.")
         return atom_positions
 
-    # Extract atom IDs from the relevant section of the input file
+    # Extract atom IDs
     for line in lines[start_index:]:
         if line.strip() == "" or line.startswith("File:"):
             break
-        atom_id = line.split()[0]  # Extract the first element as the atom ID
+        atom_id = line.split()[0]
         atom_positions.append(int(atom_id))
 
-    # Ensure the output folder exists
+    # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
 
     # Prepare the output file name
@@ -186,14 +187,9 @@ def process_frequencies(file_path, output_folder="Frequencies"):
 
     for i, line in enumerate(lines):
         if line.strip().startswith("Frequencies --"):
-            # Extract frequencies from the line
             freqs = [float(f) for f in line.split()[2:] if f.replace('-', '').replace('.', '').isdigit()]
+            ir_inten, raman_activ = [], []
 
-            # Initialize placeholders for IR Intensity and Raman Activity
-            ir_inten = []
-            raman_activ = []
-
-            # Search for IR Intensity and Raman Activity in subsequent lines
             for j in range(1, 6):
                 if i + j < len(lines):
                     if lines[i + j].strip().startswith("IR Inten    --"):
@@ -201,7 +197,6 @@ def process_frequencies(file_path, output_folder="Frequencies"):
                     elif lines[i + j].strip().startswith("Raman Activ --"):
                         raman_activ = [float(x) for x in lines[i + j].split()[2:] if x.replace('-', '').replace('.', '').isdigit()]
 
-            # Search for atomic data corresponding to the frequencies
             for j in range(6, 9):
                 if i + j < len(lines):
                     next_line = lines[i + j]
@@ -213,13 +208,15 @@ def process_frequencies(file_path, output_folder="Frequencies"):
                             if len(atom_parts) > 4 and atom_parts[0].isdigit():
                                 atom_id = int(atom_parts[0])
                                 if atom_id in atom_positions:
-                                    # Extract X, Y, Z displacements for each frequency
                                     x_values = [float(x) for x in atom_parts[2::3]]
                                     y_values = [float(y) for y in atom_parts[3::3]]
                                     z_values = [float(z) for z in atom_parts[4::3]]
                                     for idx, freq in enumerate(freqs):
-                                        if 200 < freq < 750:  # Filter frequencies within range
+                                        if 200 < freq < 750:
                                             if idx < len(x_values) and idx < len(y_values) and idx < len(z_values):
+                                                # Skip if X, Y, and Z are all 0.00 or -0.00
+                                                if all(abs(val) == 0 for val in [x_values[idx], y_values[idx], z_values[idx]]):
+                                                    continue  # Skip saving this entry
                                                 if freq not in atom_data[atom_id]:
                                                     atom_data[atom_id][freq] = {
                                                         "X": x_values[idx],
@@ -238,6 +235,7 @@ def process_frequencies(file_path, output_folder="Frequencies"):
             for freq, entry in sorted(freq_data.items()):
                 f.write(f"{freq:.4f}  {entry['X']:.2f}  {entry['Y']:.2f}  {entry['Z']:.2f}  {entry['IR']}  {entry['Raman']}\n")
             f.write("\n")
+
 
 def process_all_frequencies(folder_path, output_folder="Frequencies"):
     """
